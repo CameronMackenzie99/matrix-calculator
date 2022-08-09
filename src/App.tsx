@@ -26,17 +26,10 @@ function App() {
     }
   };
 
-  const NewMatrixArray = (rows: number, columns: number) => {
-    let arr = [];
-    for (let i = 0; i < columns; i++) {
-      let row_arr = [];
-      for (let j = 0; j < rows; j++) {
-        row_arr.push(null);
-      }
-      arr.push(row_arr);
-    }
-    // console.log(arr)
-    return arr;
+  const generateMatrixArray = (rows: number, columns: number, mapper) => {
+    return Array(rows)
+      .fill()
+      .map(() => Array(columns).fill().map(mapper));
   };
 
   const GenerateGrid = ({ Matrix, setMatrix }) => {
@@ -58,8 +51,8 @@ function App() {
 
   useEffect(() => {
     CheckMatrixShapes(B, C);
-    setMatrix1(NewMatrixArray(A, B));
-    setMatrix2(NewMatrixArray(C, D));
+    setMatrix1(generateMatrixArray(A, B, () => null));
+    setMatrix2(generateMatrixArray(C, D, () => null));
   }, [A, B, C, D]);
 
   const handleSubmit = () => {
