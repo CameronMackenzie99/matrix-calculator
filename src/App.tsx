@@ -63,6 +63,7 @@ function App() {
     const stateChanger = matrixStateMap[matrix.constructor.name];
     console.log(stateChanger);
     if (stateChanger) {
+      // @ts-ignore
       stateChanger(newMatrix, () =>
         console.log(matrix, 'matrix after state change')
       );
@@ -112,12 +113,13 @@ function App() {
     placeholder: string;
   }) => {
     return (
-      <div className='border flex'>
+      <div className='border flex aspect-square'>
         <input
           type='number'
           onChange={onChange}
           placeholder={placeholder}
           value={value}
+          className='text-center overflow-hidden'
         />
       </div>
     );
@@ -139,35 +141,44 @@ function App() {
   return (
     <div className=''>
       <div className='flex flex-row justify-center gap-x-6'>
-        <div className='grid grid-rows-2 w-1/2'>
-          <div className='flex flex-row gap-x-1 justify-center'>
+        <div className='w-1/2'>
+          <div className='flex flex-row gap-x-5 justify-center m-4 h-12'>
             <input
               type='number'
-              onChange={(e) => setA(parseInt(e.target.value))}
-              className='border'
+              onChange={(e) => setA(Math.abs(parseInt(e.target.value)))}
+              className='border aspect-square text-center'
+              min='0'
+              step='1'
             />
+            <div className='flex items-center'>x</div>
             <input
               type='number'
-              onChange={(e) => setB(parseInt(e.target.value))}
-              className='border'
+              onChange={(e) => setB(Math.abs(parseInt(e.target.value)))}
+              className='border aspect-square text-center'
+              min='0'
+              step='1'
             />
           </div>
-          <div className='flex justify-center gap-x-5'>
+          <div className='flex justify-center px-12'>
             {<Grid matrix={matrix1} handleChange={handleChange} />}
           </div>
         </div>
-        <div className='grid grid-rows-2'>
-          <div className='border flex flex-row gap-x-1'>
+        <div className='w-1/2'>
+          <div className='flex flex-row gap-x-5 justify-center m-4 h-12'>
             <input
               type='number'
-              onChange={(e) => setC(parseInt(e.target.value))}
-              className=''
+              onChange={(e) => setC(Math.abs(parseInt(e.target.value)))}
+              className='border aspect-square text-center'
+              min='0'
+              step='1'
             />
-            x
+            <div className='flex items-center'>x</div>
             <input
               type='number'
-              onChange={(e) => setD(parseInt(e.target.value))}
-              className=''
+              onChange={(e) => setD(Math.abs(parseInt(e.target.value)))}
+              className='border aspect-square text-center'
+              min='0'
+              step='1'
             />
           </div>
           <div>
