@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import './App.css';
 
 function NotCompatible({ canMultiply }: any) {
   if (!canMultiply) {
@@ -8,14 +7,25 @@ function NotCompatible({ canMultiply }: any) {
   return <div></div>;
 }
 
+const getRowsClassName = (matrix) => {
+  if (matrix.length > 0) {
+    return `grid-rows-${matrix.length}`;
+  }
+};
+const getColsClassName = (matrix) => {
+  if (matrix.length > 0) {
+    return `grid-cols-${matrix[0].length}`;
+  }
+};
+
 function App() {
   const [A, setA] = useState<number>(0);
   const [B, setB] = useState<number>(0);
   const [C, setC] = useState<number>(0);
   const [D, setD] = useState<number>(0);
   const [canMultiply, setCanMultiply] = useState<boolean>(false);
-  const [Matrix1, setMatrix1] = useState<Array<any>>([]);
-  const [Matrix2, setMatrix2] = useState<Array<any>>([]);
+  const [matrix1, setMatrix1] = useState<Array<any>>([]);
+  const [matrix2, setMatrix2] = useState<Array<any>>([]);
 
   const CheckMatrixShapes = (Matrix1Columns, Matrix2Rows) => {
     // console.log(Matrix1Columns, Matrix2Rows)
@@ -32,21 +42,62 @@ function App() {
       .map(() => Array(columns).fill().map(mapper));
   };
 
-  const GenerateGrid = ({ Matrix, setMatrix }) => {
-    console.log(Matrix);
-    const display = (x, i, j) => (
-      <div className='border' key={i}>
-        <span className='bg-blue-500'>
-          <input type='text' placeholder='x' />
-        </span>
+  const handleChange = (matrix, x, y, value) => {
+    const matrixStateMap = {
+      matrix1: setMatrix1,
+      matrix2: setMatrix2,
+    };
+
+    let newMatrix = [...matrix];
+    newMatrix[y][x] = value;
+    console.log(newMatrix, 'newmatrix');
+    const stateChanger = matrixStateMap[matrix];
+    console.log(stateChanger);
+    if (stateChanger) {
+      stateChanger(newMatrix, () =>
+        console.log(matrix, 'matrix after state change')
+      );
+    }
+  };
+
+  const Grid = ({ matrix, handleChange }) => {
+    return (
+      <div className='flex'>
+        {matrix[0] && matrix[0].length > 0 && (
+          <div
+            className={`border grid ${getRowsClassName(
+              matrix
+            )} ${getColsClassName(matrix)}`}
+          >
+            {matrix.map((row, rowIdx) =>
+              row.map((value, colIdx) => (
+                <Cell
+                  key={`${rowIdx}-${colIdx}`}
+                  onChange={(e) => {
+                    handleChange(matrix, colIdx, rowIdx, e.target.value);
+                  }}
+                  value={value}
+                  placeholder={`${rowIdx}-${colIdx}`}
+                />
+              ))
+            )}
+          </div>
+        )}
       </div>
     );
-    let grid = Matrix.map((subarray, i, j) => (
-      <div className='' key={[i, j]}>
-        {subarray.map(display)}
+  };
+
+  const Cell = ({ onChange, value, placeholder }) => {
+    return (
+      <div className='border flex'>
+        <input
+          type='number'
+          onChange={onChange}
+          placeholder={placeholder}
+          value={value}
+        />
       </div>
-    ));
-    return grid;
+    );
   };
 
   useEffect(() => {
@@ -62,11 +113,10 @@ function App() {
       console.log('not compatible');
     }
   };
-  // need to use spread operator to set state i.e. setMatrix([...Matrix, []])?
   return (
     <div className=''>
       <div className='flex flex-row justify-center gap-x-6'>
-        <div className='grid grid-rows-2 gap-x-10 w-1/2'>
+        <div className='grid grid-rows-2 w-1/2'>
           <div className='flex flex-row gap-x-1 justify-center'>
             <input
               type='number'
@@ -80,9 +130,7 @@ function App() {
             />
           </div>
           <div className='flex justify-center gap-x-5'>
-            {Matrix1[0] && Matrix1[0].length > 0 && (
-              <GenerateGrid Matrix={Matrix1} setMatrix={setMatrix1} />
-            )}
+            {<Grid matrix={matrix1} handleChange={handleChange} />}
           </div>
         </div>
         <div className='grid grid-rows-2'>
@@ -101,9 +149,7 @@ function App() {
           </div>
           <div>
             <div className='flex justify-center gap-x-5'>
-              {Matrix2[0] && Matrix2[0].length > 0 && (
-                <GenerateGrid Matrix={Matrix2} setMatrix={setMatrix2} />
-              )}
+              {<Grid matrix={matrix2} handleChange={handleChange} />}
             </div>
           </div>
         </div>
