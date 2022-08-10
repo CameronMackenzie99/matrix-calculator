@@ -1,22 +1,24 @@
 import { useEffect, useState } from 'react';
 
-function NotCompatible({ canMultiply }: any) {
+function NotCompatible({ canMultiply }: { canMultiply: boolean }) {
   if (!canMultiply) {
     return <div>Error: matrices not multipliable!</div>;
   }
   return <div></div>;
 }
 
-const getRowsClassName = (matrix) => {
+const getRowsClassName = (matrix: Matrix) => {
   if (matrix.length > 0) {
     return `grid-rows-${matrix.length}`;
   }
 };
-const getColsClassName = (matrix) => {
+const getColsClassName = (matrix: Matrix) => {
   if (matrix.length > 0) {
     return `grid-cols-${matrix[0].length}`;
   }
 };
+
+type Matrix = number[][];
 
 function App() {
   const [A, setA] = useState<number>(0);
@@ -24,10 +26,10 @@ function App() {
   const [C, setC] = useState<number>(0);
   const [D, setD] = useState<number>(0);
   const [canMultiply, setCanMultiply] = useState<boolean>(false);
-  const [matrix1, setMatrix1] = useState<Array<any>>([]);
-  const [matrix2, setMatrix2] = useState<Array<any>>([]);
+  const [matrix1, setMatrix1] = useState<Matrix>([[0]]);
+  const [matrix2, setMatrix2] = useState<Matrix>([[0]]);
 
-  const CheckMatrixShapes = (Matrix1Columns, Matrix2Rows) => {
+  const CheckMatrixShapes = (Matrix1Columns: number, Matrix2Rows: number) => {
     // console.log(Matrix1Columns, Matrix2Rows)
     if (Matrix1Columns === Matrix2Rows) {
       setCanMultiply(true);
@@ -36,14 +38,21 @@ function App() {
     }
   };
 
-  const generateMatrixArray = (rows: number, columns: number, mapper) => {
+  const generateMatrixArray = (rows: number, columns: number, mapper: any) => {
     return Array(rows)
-      .fill()
-      .map(() => Array(columns).fill().map(mapper));
+      .fill(undefined)
+      .map(() => Array(columns).fill(undefined).map(mapper)) as Matrix;
   };
 
-  const handleChange = (matrix, x, y, value) => {
-    const matrixStateMap = {
+  const handleChange = (
+    matrix: Matrix,
+    x: number,
+    y: number,
+    value: number
+  ) => {
+    const matrixStateMap: {
+      [key: string]: React.Dispatch<React.SetStateAction<Matrix>>;
+    } = {
       matrix1: setMatrix1,
       matrix2: setMatrix2,
     };
@@ -51,7 +60,7 @@ function App() {
     let newMatrix = [...matrix];
     newMatrix[y][x] = value;
     console.log(newMatrix, 'newmatrix');
-    const stateChanger = matrixStateMap[matrix];
+    const stateChanger = matrixStateMap[matrix.constructor.name];
     console.log(stateChanger);
     if (stateChanger) {
       stateChanger(newMatrix, () =>
@@ -60,7 +69,13 @@ function App() {
     }
   };
 
-  const Grid = ({ matrix, handleChange }) => {
+  const Grid = ({
+    matrix,
+    handleChange,
+  }: {
+    matrix: Matrix;
+    handleChange: any;
+  }) => {
     return (
       <div className='flex'>
         {matrix[0] && matrix[0].length > 0 && (
@@ -87,7 +102,15 @@ function App() {
     );
   };
 
-  const Cell = ({ onChange, value, placeholder }) => {
+  const Cell = ({
+    onChange,
+    value,
+    placeholder,
+  }: {
+    onChange: React.ChangeEventHandler<HTMLInputElement>;
+    value: number;
+    placeholder: string;
+  }) => {
     return (
       <div className='border flex'>
         <input
