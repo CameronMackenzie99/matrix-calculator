@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useEffect, useState } from 'react';
 
 function NotCompatible({ canMultiply }: { canMultiply: boolean }) {
@@ -30,15 +31,18 @@ function App() {
   const [matrix2, setMatrix2] = useState<Matrix>([[0]]);
   const [resultMatrix, setResultMatrix] = useState<Matrix>([[0]]);
 
-  const CheckMatrixShapes = (Matrix1Columns: number, Matrix2Rows: number) => {
-    // console.log(Matrix1Columns, Matrix2Rows)
-    if (Matrix1Columns === Matrix2Rows) {
-      setCanMultiply(true);
-    } else {
-      setCanMultiply(false);
-    }
-    setResultMatrix(generateMatrixArray(A, D, () => null));
-  };
+  const CheckMatrixShapes = useCallback(
+    (Matrix1Columns: number, Matrix2Rows: number) => {
+      // console.log(Matrix1Columns, Matrix2Rows)
+      if (Matrix1Columns === Matrix2Rows) {
+        setCanMultiply(true);
+      } else {
+        setCanMultiply(false);
+      }
+      setResultMatrix(generateMatrixArray(A, D, () => null));
+    },
+    [A, D]
+  );
 
   const generateMatrixArray = (rows: number, columns: number, mapper: any) => {
     return Array(rows)
@@ -151,7 +155,7 @@ function App() {
 
   useEffect(() => {
     CheckMatrixShapes(B, C);
-  }, [A, B, C, D]);
+  }, [CheckMatrixShapes, A, B, C, D]);
 
   useEffect(() => {
     setMatrix1(generateMatrixArray(A, B, () => null));
