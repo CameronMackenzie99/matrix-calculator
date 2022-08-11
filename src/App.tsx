@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useEffect, useState } from 'react';
 
-function NotCompatible({ canMultiply }: { canMultiply: boolean }) {
+function CanMultiply({ canMultiply }: { canMultiply: boolean }) {
   if (!canMultiply) {
     return <div>Error: matrices not multipliable!</div>;
   }
@@ -13,6 +13,7 @@ const getRowsClassName = (matrix: Matrix) => {
     return `grid-rows-${matrix.length}`;
   }
 };
+
 const getColsClassName = (matrix: Matrix) => {
   if (matrix.length > 0) {
     return `grid-cols-${matrix[0].length}`;
@@ -22,8 +23,8 @@ const getColsClassName = (matrix: Matrix) => {
 type Matrix = number[][];
 
 function App() {
-  const [A, setA] = useState<number>(0);
-  const [B, setB] = useState<number>(0);
+  const [a, setA] = useState<number>(0);
+  const [b, setB] = useState<number>(0);
   const [C, setC] = useState<number>(0);
   const [D, setD] = useState<number>(0);
   const [canMultiply, setCanMultiply] = useState<boolean>(false);
@@ -31,17 +32,16 @@ function App() {
   const [matrix2, setMatrix2] = useState<Matrix>([[0]]);
   const [resultMatrix, setResultMatrix] = useState<Matrix>([[0]]);
 
-  const CheckMatrixShapes = useCallback(
+  const checkMatrixShapes = useCallback(
     (Matrix1Columns: number, Matrix2Rows: number) => {
-      // console.log(Matrix1Columns, Matrix2Rows)
       if (Matrix1Columns === Matrix2Rows) {
         setCanMultiply(true);
       } else {
         setCanMultiply(false);
       }
-      setResultMatrix(generateMatrixArray(A, D, () => null));
+      setResultMatrix(generateMatrixArray(a, D, () => null));
     },
-    [A, D]
+    [a, D]
   );
 
   const generateMatrixArray = (rows: number, columns: number, mapper: any) => {
@@ -50,7 +50,7 @@ function App() {
       .map(() => Array(columns).fill(undefined).map(mapper)) as Matrix;
   };
 
-  const dotProduct = (
+  const getDotProduct = (
     matrix1: Matrix,
     matrix2: Matrix,
     resultMatrix: Matrix
@@ -81,14 +81,9 @@ function App() {
 
     let newMatrix = [...matrix];
     newMatrix[y][x] = value;
-    console.log(newMatrix, 'newmatrix');
     const stateChanger = matrixStateMap[matrix.constructor.name];
-    console.log(stateChanger);
     if (stateChanger) {
-      // @ts-ignore
-      stateChanger(newMatrix, () =>
-        console.log(matrix, 'matrix after state change')
-      );
+      stateChanger(newMatrix);
     }
   };
 
@@ -154,12 +149,12 @@ function App() {
   };
 
   useEffect(() => {
-    CheckMatrixShapes(B, C);
-  }, [CheckMatrixShapes, A, B, C, D]);
+    checkMatrixShapes(b, C);
+  }, [checkMatrixShapes, a, b, C, D]);
 
   useEffect(() => {
-    setMatrix1(generateMatrixArray(A, B, () => null));
-  }, [A, B]);
+    setMatrix1(generateMatrixArray(a, b, () => null));
+  }, [a, b]);
 
   useEffect(() => {
     setMatrix2(generateMatrixArray(C, D, () => null));
@@ -167,9 +162,10 @@ function App() {
 
   const handleSubmit = () => {
     if (canMultiply) {
-      dotProduct(matrix1, matrix2, resultMatrix);
+      getDotProduct(matrix1, matrix2, resultMatrix);
     }
   };
+
   return (
     <div className='max-h-screen'>
       <div className='flex justify-center gap-x-6 h-50'>
@@ -209,7 +205,7 @@ function App() {
               Submit
             </button>
             <div className='text-center'>
-              <NotCompatible canMultiply={canMultiply} />
+              <CanMultiply canMultiply={canMultiply} />
             </div>
           </div>
         </div>
