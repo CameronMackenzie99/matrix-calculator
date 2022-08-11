@@ -37,15 +37,29 @@ function App() {
     } else {
       setCanMultiply(false);
     }
-    setResultMatrix(
-      generateMatrixArray(Matrix1Columns, Matrix2Rows, () => null)
-    );
+    setResultMatrix(generateMatrixArray(A, D, () => null));
   };
 
   const generateMatrixArray = (rows: number, columns: number, mapper: any) => {
     return Array(rows)
       .fill(undefined)
       .map(() => Array(columns).fill(undefined).map(mapper)) as Matrix;
+  };
+
+  const dotProduct = (
+    matrix1: Matrix,
+    matrix2: Matrix,
+    resultMatrix: Matrix
+  ) => {
+    let newResultMatrix = [...resultMatrix];
+    for (let i = 0; i < matrix1.length; i++) {
+      for (let j = 0; j < matrix2[0].length; j++) {
+        for (let k = 0; k < matrix1[0].length; k++) {
+          newResultMatrix[i][j] += matrix1[i][k] * matrix2[k][j];
+        }
+      }
+    }
+    setResultMatrix(newResultMatrix);
   };
 
   const handleChange = (
@@ -137,7 +151,7 @@ function App() {
 
   useEffect(() => {
     CheckMatrixShapes(B, C);
-  }, [B, C]);
+  }, [A, B, C, D]);
 
   useEffect(() => {
     setMatrix1(generateMatrixArray(A, B, () => null));
@@ -149,9 +163,7 @@ function App() {
 
   const handleSubmit = () => {
     if (canMultiply) {
-      console.log('multiplication successful');
-    } else {
-      console.log('not compatible');
+      dotProduct(matrix1, matrix2, resultMatrix);
     }
   };
   return (
@@ -164,6 +176,7 @@ function App() {
               onChange={(e) => setA(Math.abs(parseInt(e.target.value)))}
               className='border aspect-square text-center'
               min='0'
+              max='12'
               step='1'
             />
             <div className='flex items-center'>x</div>
@@ -172,6 +185,7 @@ function App() {
               onChange={(e) => setB(Math.abs(parseInt(e.target.value)))}
               className='border aspect-square text-center'
               min='0'
+              max='12'
               step='1'
             />
           </div>
@@ -202,6 +216,7 @@ function App() {
               onChange={(e) => setC(Math.abs(parseInt(e.target.value)))}
               className='border aspect-square text-center'
               min='0'
+              max='12'
               step='1'
             />
             <div className='flex items-center'>x</div>
@@ -209,6 +224,7 @@ function App() {
               type='number'
               onChange={(e) => setD(Math.abs(parseInt(e.target.value)))}
               className='border aspect-square text-center'
+              max='12'
               min='0'
               step='1'
             />
@@ -228,7 +244,7 @@ function App() {
       </div>
 
       {canMultiply && (
-        <div className=''>
+        <div className='mt-4'>
           <div className='flex justify-center px-12 w-1/2 mx-auto'>
             <Grid
               matrix={resultMatrix}
