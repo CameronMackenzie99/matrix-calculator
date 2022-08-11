@@ -28,6 +28,7 @@ function App() {
   const [canMultiply, setCanMultiply] = useState<boolean>(false);
   const [matrix1, setMatrix1] = useState<Matrix>([[0]]);
   const [matrix2, setMatrix2] = useState<Matrix>([[0]]);
+  const [resultMatrix, setResultMatrix] = useState<Matrix>([[0]]);
 
   const CheckMatrixShapes = (Matrix1Columns: number, Matrix2Rows: number) => {
     // console.log(Matrix1Columns, Matrix2Rows)
@@ -36,6 +37,9 @@ function App() {
     } else {
       setCanMultiply(false);
     }
+    setResultMatrix(
+      generateMatrixArray(Matrix1Columns, Matrix2Rows, () => null)
+    );
   };
 
   const generateMatrixArray = (rows: number, columns: number, mapper: any) => {
@@ -73,15 +77,17 @@ function App() {
   const Grid = ({
     matrix,
     handleChange,
+    readOnly,
   }: {
     matrix: Matrix;
     handleChange: any;
+    readOnly: boolean;
   }) => {
     return (
       <div className='flex'>
         {matrix[0] && matrix[0].length > 0 && (
           <div
-            className={`border grid ${getRowsClassName(
+            className={`border grid overflow-hidden ${getRowsClassName(
               matrix
             )} ${getColsClassName(matrix)}`}
           >
@@ -94,6 +100,7 @@ function App() {
                   }}
                   value={value}
                   placeholder={`${rowIdx}-${colIdx}`}
+                  readOnly={readOnly}
                 />
               ))
             )}
@@ -107,10 +114,12 @@ function App() {
     onChange,
     value,
     placeholder,
+    readOnly,
   }: {
     onChange: React.ChangeEventHandler<HTMLInputElement>;
     value: number;
     placeholder: string;
+    readOnly: boolean;
   }) => {
     return (
       <div className='border flex aspect-square'>
@@ -120,6 +129,7 @@ function App() {
           placeholder={placeholder}
           value={value}
           className='text-center overflow-hidden'
+          readOnly={readOnly}
         />
       </div>
     );
@@ -127,9 +137,15 @@ function App() {
 
   useEffect(() => {
     CheckMatrixShapes(B, C);
+  }, [B, C]);
+
+  useEffect(() => {
     setMatrix1(generateMatrixArray(A, B, () => null));
+  }, [A, B]);
+
+  useEffect(() => {
     setMatrix2(generateMatrixArray(C, D, () => null));
-  }, [A, B, C, D]);
+  }, [C, D]);
 
   const handleSubmit = () => {
     if (canMultiply) {
@@ -139,9 +155,9 @@ function App() {
     }
   };
   return (
-    <div className=''>
-      <div className='flex flex-row justify-center gap-x-6'>
-        <div className='w-1/2'>
+    <div className='max-h-screen'>
+      <div className='flex justify-center gap-x-6 h-50'>
+        <div className='w-2/5 flex flex-col'>
           <div className='flex flex-row gap-x-5 justify-center m-4 h-12'>
             <input
               type='number'
@@ -160,10 +176,26 @@ function App() {
             />
           </div>
           <div className='flex justify-center px-12'>
-            {<Grid matrix={matrix1} handleChange={handleChange} />}
+            {
+              <Grid
+                matrix={matrix1}
+                handleChange={handleChange}
+                readOnly={false}
+              />
+            }
           </div>
         </div>
-        <div className='w-1/2'>
+        <div className='w-1/5 flex flex-col'>
+          <div className='m-4 flex flex-col justify-center'>
+            <button type='submit' className='border' onClick={handleSubmit}>
+              Submit
+            </button>
+            <div className='text-center'>
+              <NotCompatible canMultiply={canMultiply} />
+            </div>
+          </div>
+        </div>
+        <div className='w-2/5 flex flex-col'>
           <div className='flex flex-row gap-x-5 justify-center m-4 h-12'>
             <input
               type='number'
@@ -182,19 +214,30 @@ function App() {
             />
           </div>
           <div>
-            <div className='flex justify-center gap-x-5'>
-              {<Grid matrix={matrix2} handleChange={handleChange} />}
+            <div className='flex justify-center px-12'>
+              {
+                <Grid
+                  matrix={matrix2}
+                  handleChange={handleChange}
+                  readOnly={false}
+                />
+              }
             </div>
           </div>
         </div>
       </div>
-      <div className='flex justify-center items-center mt-10 gap-x-2'>
-        <button type='submit' className='border' onClick={handleSubmit}>
-          Submit
-        </button>
-        {A}x{B} {C}x{D}
-      </div>
-      <NotCompatible canMultiply={canMultiply} />
+
+      {canMultiply && (
+        <div className=''>
+          <div className='flex justify-center px-12 w-1/2 mx-auto'>
+            <Grid
+              matrix={resultMatrix}
+              handleChange={handleChange}
+              readOnly={true}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
