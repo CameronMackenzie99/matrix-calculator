@@ -25,8 +25,8 @@ type Matrix = number[][];
 function App() {
   const [a, setA] = useState<number>(0);
   const [b, setB] = useState<number>(0);
-  const [C, setC] = useState<number>(0);
-  const [D, setD] = useState<number>(0);
+  const [c, setC] = useState<number>(0);
+  const [d, setD] = useState<number>(0);
   const [canMultiply, setCanMultiply] = useState<boolean>(false);
   const [matrix1, setMatrix1] = useState<Matrix>([[0]]);
   const [matrix2, setMatrix2] = useState<Matrix>([[0]]);
@@ -39,9 +39,9 @@ function App() {
       } else {
         setCanMultiply(false);
       }
-      setResultMatrix(generateMatrixArray(a, D, () => null));
+      setResultMatrix(generateMatrixArray(a, d, () => null));
     },
-    [a, D]
+    [a, d]
   );
 
   const generateMatrixArray = (rows: number, columns: number, mapper: any) => {
@@ -149,16 +149,16 @@ function App() {
   };
 
   useEffect(() => {
-    checkMatrixShapes(b, C);
-  }, [checkMatrixShapes, a, b, C, D]);
+    checkMatrixShapes(b, c);
+  }, [checkMatrixShapes, a, b, c, d]);
 
   useEffect(() => {
     setMatrix1(generateMatrixArray(a, b, () => null));
   }, [a, b]);
 
   useEffect(() => {
-    setMatrix2(generateMatrixArray(C, D, () => null));
-  }, [C, D]);
+    setMatrix2(generateMatrixArray(c, d, () => null));
+  }, [c, d]);
 
   const handleSubmit = () => {
     if (canMultiply) {
