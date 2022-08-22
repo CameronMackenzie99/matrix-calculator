@@ -18,10 +18,12 @@ const Grid = ({
   matrix,
   handleChange,
   readOnly,
+  name,
 }: {
   matrix: Matrix;
   handleChange: Function;
   readOnly: boolean;
+  name: string;
 }) => {
   return (
     <div className='flex'>
@@ -36,7 +38,7 @@ const Grid = ({
               <Cell
                 key={`${rowIdx}-${colIdx}`}
                 onChange={(e) => {
-                  handleChange(matrix, colIdx, rowIdx, e.target.value);
+                  handleChange(matrix, name, colIdx, rowIdx, e.target.value);
                 }}
                 value={value}
                 placeholder={`${rowIdx}-${colIdx}`}
@@ -103,6 +105,7 @@ function App() {
 
   const handleChange = (
     matrix: Matrix,
+    stateName: string,
     x: number,
     y: number,
     value: number
@@ -114,14 +117,14 @@ function App() {
       matrix2: setMatrix2,
     };
 
-    const stateChanger = matrixStateMap[matrix.constructor.name];
-    console.log(stateChanger);
+    console.log(matrix);
+    const stateChanger = matrixStateMap[stateName];
 
-    let newMatrix = [...matrix];
-    newMatrix[y][x] = value;
-    if (stateChanger) {
-      stateChanger(matrix);
-    }
+    stateChanger((prevMatrix) => {
+      let newMatrix = [...prevMatrix];
+      newMatrix[y][x] = value;
+      return newMatrix;
+    });
   };
 
   const getDotProduct = (
@@ -130,7 +133,7 @@ function App() {
     resultMatrix: Matrix
   ) => {
     console.log(matrix1, matrix2, resultMatrix);
-    let newResultMatrix = [...resultMatrix];
+    let newResultMatrix = generateMatrixArray(a, d, () => 0);
     for (let i = 0; i < matrix1.length; i++) {
       for (let j = 0; j < matrix2[0].length; j++) {
         for (let k = 0; k < matrix1[0].length; k++) {
@@ -193,6 +196,7 @@ function App() {
             {
               <Grid
                 matrix={matrix1}
+                name={'matrix1'}
                 handleChange={handleChange}
                 readOnly={false}
               />
@@ -236,6 +240,7 @@ function App() {
               {
                 <Grid
                   matrix={matrix2}
+                  name={'matrix2'}
                   handleChange={handleChange}
                   readOnly={false}
                 />
@@ -250,6 +255,7 @@ function App() {
           <div className='flex justify-center px-12 w-1/2 mx-auto'>
             <Grid
               matrix={resultMatrix}
+              name={'resultMatrix'}
               handleChange={handleChange}
               readOnly={true}
             />
