@@ -1,12 +1,4 @@
-import { useCallback } from 'react';
 import { useEffect, useState } from 'react';
-
-function CanMultiply({ canMultiply }: { canMultiply: boolean }) {
-  if (!canMultiply) {
-    return <div>Error: matrices not multipliable!</div>;
-  }
-  return <div></div>;
-}
 
 const getRowsClassName = (matrix: Matrix) => {
   if (matrix.length > 0) {
@@ -22,52 +14,98 @@ const getColsClassName = (matrix: Matrix) => {
 
 type Matrix = number[][];
 
+const Grid = ({
+  matrix,
+  handleChange,
+  readOnly,
+  name,
+}: {
+  matrix: Matrix;
+  handleChange: Function;
+  readOnly: boolean;
+  name: string;
+}) => {
+  return (
+    <div className='flex'>
+      {matrix[0] && matrix[0].length > 0 && (
+        <div
+          className={`border grid overflow-hidden ${getRowsClassName(
+            matrix
+          )} ${getColsClassName(matrix)}`}
+        >
+          {matrix.map((row, rowIdx) =>
+            row.map((value, colIdx) => (
+              <Cell
+                key={`${rowIdx}-${colIdx}`}
+                onChange={(e) => {
+                  handleChange(matrix, name, colIdx, rowIdx, e.target.value);
+                }}
+                value={value}
+                placeholder={`${rowIdx}-${colIdx}`}
+                readOnly={readOnly}
+              />
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const Cell = ({
+  onChange,
+  value,
+  placeholder,
+  readOnly,
+}: {
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
+  value: number;
+  placeholder: string;
+  readOnly: boolean;
+}) => {
+  return (
+    <div className='border flex aspect-square'>
+      <input
+        type='number'
+        onChange={onChange}
+        placeholder={placeholder}
+        value={value}
+        className='text-center overflow-hidden'
+        readOnly={readOnly}
+      />
+    </div>
+  );
+};
+
+const checkMatrixShapes = (Matrix1Columns: number, Matrix2Rows: number) => {
+  if (Matrix1Columns === Matrix2Rows) {
+    return true;
+  }
+  return false;
+};
+
+const generateMatrixArray = (
+  rows: number,
+  columns: number,
+  mapper: () => number
+) => {
+  return Array(rows)
+    .fill(undefined)
+    .map(() => Array(columns).fill(undefined).map(mapper)) as Matrix;
+};
+
 function App() {
   const [a, setA] = useState<number>(0);
   const [b, setB] = useState<number>(0);
   const [c, setC] = useState<number>(0);
   const [d, setD] = useState<number>(0);
-  const [canMultiply, setCanMultiply] = useState<boolean>(false);
   const [matrix1, setMatrix1] = useState<Matrix>([[0]]);
   const [matrix2, setMatrix2] = useState<Matrix>([[0]]);
   const [resultMatrix, setResultMatrix] = useState<Matrix>([[0]]);
 
-  const checkMatrixShapes = useCallback(
-    (Matrix1Columns: number, Matrix2Rows: number) => {
-      if (Matrix1Columns === Matrix2Rows) {
-        setCanMultiply(true);
-      } else {
-        setCanMultiply(false);
-      }
-      setResultMatrix(generateMatrixArray(a, d, () => null));
-    },
-    [a, d]
-  );
-
-  const generateMatrixArray = (rows: number, columns: number, mapper: any) => {
-    return Array(rows)
-      .fill(undefined)
-      .map(() => Array(columns).fill(undefined).map(mapper)) as Matrix;
-  };
-
-  const getDotProduct = (
-    matrix1: Matrix,
-    matrix2: Matrix,
-    resultMatrix: Matrix
-  ) => {
-    let newResultMatrix = [...resultMatrix];
-    for (let i = 0; i < matrix1.length; i++) {
-      for (let j = 0; j < matrix2[0].length; j++) {
-        for (let k = 0; k < matrix1[0].length; k++) {
-          newResultMatrix[i][j] += matrix1[i][k] * matrix2[k][j];
-        }
-      }
-    }
-    setResultMatrix(newResultMatrix);
-  };
-
   const handleChange = (
     matrix: Matrix,
+    stateName: string,
     x: number,
     y: number,
     value: number
@@ -79,89 +117,54 @@ function App() {
       matrix2: setMatrix2,
     };
 
-    let newMatrix = [...matrix];
-    newMatrix[y][x] = value;
-    const stateChanger = matrixStateMap[matrix.constructor.name];
-    if (stateChanger) {
-      stateChanger(newMatrix);
+    console.log(matrix);
+    const stateChanger = matrixStateMap[stateName];
+
+    stateChanger((prevMatrix) => {
+      let newMatrix = [...prevMatrix];
+      newMatrix[y][x] = value;
+      return newMatrix;
+    });
+  };
+
+  const getDotProduct = (
+    matrix1: Matrix,
+    matrix2: Matrix,
+    resultMatrix: Matrix
+  ) => {
+    console.log(matrix1, matrix2, resultMatrix);
+    let newResultMatrix = generateMatrixArray(a, d, () => 0);
+    for (let i = 0; i < matrix1.length; i++) {
+      for (let j = 0; j < matrix2[0].length; j++) {
+        for (let k = 0; k < matrix1[0].length; k++) {
+          newResultMatrix[i][j] += matrix1[i][k] * matrix2[k][j];
+        }
+      }
     }
-  };
-
-  const Grid = ({
-    matrix,
-    handleChange,
-    readOnly,
-  }: {
-    matrix: Matrix;
-    handleChange: any;
-    readOnly: boolean;
-  }) => {
-    return (
-      <div className='flex'>
-        {matrix[0] && matrix[0].length > 0 && (
-          <div
-            className={`border grid overflow-hidden ${getRowsClassName(
-              matrix
-            )} ${getColsClassName(matrix)}`}
-          >
-            {matrix.map((row, rowIdx) =>
-              row.map((value, colIdx) => (
-                <Cell
-                  key={`${rowIdx}-${colIdx}`}
-                  onChange={(e) => {
-                    handleChange(matrix, colIdx, rowIdx, e.target.value);
-                  }}
-                  value={value}
-                  placeholder={`${rowIdx}-${colIdx}`}
-                  readOnly={readOnly}
-                />
-              ))
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const Cell = ({
-    onChange,
-    value,
-    placeholder,
-    readOnly,
-  }: {
-    onChange: React.ChangeEventHandler<HTMLInputElement>;
-    value: number;
-    placeholder: string;
-    readOnly: boolean;
-  }) => {
-    return (
-      <div className='border flex aspect-square'>
-        <input
-          type='number'
-          onChange={onChange}
-          placeholder={placeholder}
-          value={value}
-          className='text-center overflow-hidden'
-          readOnly={readOnly}
-        />
-      </div>
-    );
+    setResultMatrix(newResultMatrix);
   };
 
   useEffect(() => {
     checkMatrixShapes(b, c);
-  }, [checkMatrixShapes, a, b, c, d]);
+  }, [b, c]);
 
   useEffect(() => {
-    setMatrix1(generateMatrixArray(a, b, () => null));
+    const generateResultShape = () => {
+      setResultMatrix(generateMatrixArray(a, d, () => 0));
+    };
+    generateResultShape();
+  }, [a, d]);
+
+  useEffect(() => {
+    setMatrix1(generateMatrixArray(a, b, () => 0));
   }, [a, b]);
 
   useEffect(() => {
-    setMatrix2(generateMatrixArray(c, d, () => null));
+    setMatrix2(generateMatrixArray(c, d, () => 0));
   }, [c, d]);
 
   const handleSubmit = () => {
-    if (canMultiply) {
+    if (checkMatrixShapes(b, c)) {
       getDotProduct(matrix1, matrix2, resultMatrix);
     }
   };
@@ -193,6 +196,7 @@ function App() {
             {
               <Grid
                 matrix={matrix1}
+                name={'matrix1'}
                 handleChange={handleChange}
                 readOnly={false}
               />
@@ -205,7 +209,9 @@ function App() {
               Submit
             </button>
             <div className='text-center'>
-              <CanMultiply canMultiply={canMultiply} />
+              {!checkMatrixShapes(b, c) ? (
+                <div>Error: matrices not multipliable!</div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -234,6 +240,7 @@ function App() {
               {
                 <Grid
                   matrix={matrix2}
+                  name={'matrix2'}
                   handleChange={handleChange}
                   readOnly={false}
                 />
@@ -243,11 +250,12 @@ function App() {
         </div>
       </div>
 
-      {canMultiply && (
+      {checkMatrixShapes(b, c) && (
         <div className='mt-4'>
           <div className='flex justify-center px-12 w-1/2 mx-auto'>
             <Grid
               matrix={resultMatrix}
+              name={'resultMatrix'}
               handleChange={handleChange}
               readOnly={true}
             />
